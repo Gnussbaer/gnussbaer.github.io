@@ -66,6 +66,20 @@
         #barcode-container {
             margin-top: 20px;
         }
+        .quantity-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .quantity-container button {
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -132,9 +146,11 @@
                     <td>${item.name}</td>
                     <td>${item.price.toFixed(2)}</td>
                     <td>
-                        <button onclick="changeQuantity('${key}', -1)">-</button>
-                        ${item.quantity}
-                        <button onclick="changeQuantity('${key}', 1)">+</button>
+                        <div class="quantity-container">
+                            <button onclick="changeQuantity('${key}', -1')">-</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="changeQuantity('${key}', 1')">+</button>
+                        </div>
                     </td>
                 `;
                 cartElement.appendChild(row);
