@@ -107,9 +107,9 @@
     </div>
     <script>
         const productDatabase = {
-            "123456": { name: "Rosenstrauß", price: 10.99 },
-            "654321": { name: "Tulpenstrauß", price: 8.99 },
-            "111222": { name: "Sonnenblumen", price: 5.49 }
+            "123456": { name: "Rosen einzeln", price: 2.50 },
+            "654321": { name: "Tulpen", price: 1.00 },
+            "111222": { name: "Sonnenblumen", price: 1.50 }
         };
         
         let cart = {};
@@ -147,9 +147,9 @@
                     <td>${item.price.toFixed(2)}</td>
                     <td>
                         <div class="quantity-container">
-                            <button onclick="changeQuantity('${key}', -1')">-</button>
+                            <button onclick="changeQuantity('${key}', -1)">-</button>
                             <span>${item.quantity}</span>
-                            <button onclick="changeQuantity('${key}', 1')">+</button>
+                            <button onclick="changeQuantity('${key}', 1)">+</button>
                         </div>
                     </td>
                 `;
@@ -157,6 +157,7 @@
             });
             
             totalElement.innerText = totalPrice.toFixed(2);
+            generateBarcode(totalPrice);
         }
         
         function changeQuantity(key, amount) {
@@ -182,7 +183,6 @@
         
         function generateBarcodeFromButton() {
             const totalPrice = parseFloat(totalElement.innerText);
-            barcodeElement.innerHTML = "";
             generateBarcode(totalPrice);
         }
         
