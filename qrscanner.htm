@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR-Code Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        #qr-reader {
+            width: 100%;
+            max-width: 400px;
+            margin: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #cart-container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #barcode-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Produkte scannen</h1>
+    <div id="qr-reader"></div>
+    <div id="cart-container">
+        <h2>Einkaufsliste</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Produkt</th>
+                    <th>Preis (CHF)</th>
+                    <th>Anzahl</th>
+                </tr>
+            </thead>
+            <tbody id="cart"></tbody>
+        </table>
+        <h3>Gesamtpreis: <span id="total">0.00</span> CHF</h3>
+        <div class="button-container">
+            <button onclick="generateBarcodeFromButton()">Bezahlen</button>
+        </div>
+        <div id="barcode-container">
+            <svg id="barcode"></svg>
+        </div>
+    </div>
+    <script>
+        const productDatabase = {
+            "123456": { name: "Rosenstrauß", price: 10.99 },
+            "654321": { name: "Tulpenstrauß", price: 8.99 },
+            "111222": { name: "Sonnenblumen", price: 5.49 }
+        };
+        
+        let cart = {};
+        let lastScanTime = 0;
+        const cartElement = document.getElementById("cart");
+        const totalElement = document.getElementById("total");
+        const barcodeElement = document.getElementById("barcode");
+        
+        function onScanSuccess(decodedText) {
+            const now = Date.now();
+            if (now - lastScanTime < 3000) return;
+            lastScanTime = now;
+            
+            if (productDatabase[decodedText]) {
+                if (!cart[decodedText]) {
+                    cart[decodedText] = { ...productDatabase[decodedText], quantity: 1 };
+                } else {
+                    cart[decodedText].quantity++;
+                }
+                updateCartDisplay();
+            }
+        }
+        
+        function updateCartDisplay() {
+            cartElement.innerHTML = "";
+            let totalPrice = 0;
+            
+            Object.keys(cart).forEach(key => {
+                const item = cart[key];
+                totalPrice += item.price * item.quantity;
+                
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.price.toFixed(2)}</td>
+                    <td>
+                        <button onclick="changeQuantity('${key}', -1)">-</button>
+                        ${item.quantity}
+                        <button onclick="changeQuantity('${key}', 1)">+</button>
+                    </td>
+                `;
+                cartElement.appendChild(row);
+            });
+            
+            totalElement.innerText = totalPrice.toFixed(2);
+        }
+        
+        function changeQuantity(key, amount) {
+            if (cart[key]) {
+                cart[key].quantity += amount;
+                if (cart[key].quantity <= 0) {
+                    delete cart[key];
+                }
+                updateCartDisplay();
+            }
+        }
+        
+        function generateBarcode(totalPrice) {
+            const fixedPrefix = "2700000";
+            let priceInRappen = Math.round(totalPrice * 1000).toString().padStart(6, "0");
+            let barcodeValue = fixedPrefix + priceInRappen;
+            barcodeElement.innerHTML = ""; 
+            JsBarcode("#barcode", barcodeValue, {
+                format: "CODE128",
+                displayValue: true
+            });
+        }
+        
+        function generateBarcodeFromButton() {
+            const totalPrice = parseFloat(totalElement.innerText);
+            barcodeElement.innerHTML = "";
+            generateBarcode(totalPrice);
+        }
+        
+        function startQRScanner() {
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                onScanSuccess
+            ).catch(err => console.error("Fehler beim Starten des Scanners: ", err));
+        }
+        
+        window.onload = () => {
+            startQRScanner();
+        };
+    </script>
+</body>
+</html>
