@@ -154,8 +154,8 @@
         }
         
         function generateBarcode(totalPrice) {
-            const fixedPrefix = "2700000";
-            let priceInRappen = Math.round(totalPrice * 1000).toString().padStart(6, "0");
+            const fixedPrefix = "1234567";
+            let priceInRappen = Math.round(totalPrice * 100).toString().padStart(6, "0");
             let barcodeValue = fixedPrefix + priceInRappen;
             barcodeElement.innerHTML = ""; 
             JsBarcode("#barcode", barcodeValue, {
