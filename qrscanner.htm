@@ -91,8 +91,8 @@
             <thead>
                 <tr>
                     <th>Produkt</th>
-                    <th>Preis (CHF)</th>
                     <th>Anzahl</th>
+                    <th>Preis (CHF)</th>
                 </tr>
             </thead>
             <tbody id="cart"></tbody>
@@ -107,9 +107,9 @@
     </div>
     <script>
         const productDatabase = {
-            "123456": { name: "Rosenstrauß", price: 10.99 },
-            "654321": { name: "Tulpenstrauß", price: 8.99 },
-            "111222": { name: "Sonnenblumen", price: 5.49 }
+            "123456": { name: "Rosen", price: 2.50 },
+            "654321": { name: "Tulpen", price: 1.00 },
+            "111222": { name: "Sonnenblumen", price: 1.50 }
         };
         
         let cart = {};
@@ -144,19 +144,42 @@
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${item.name}</td>
-                    <td>${item.price.toFixed(2)}</td>
                     <td>
                         <div class="quantity-container">
-                            <button onclick="changeQuantity('${key}', -1')">-</button>
-                            <span>${item.quantity}</span>
-                            <button onclick="changeQuantity('${key}', 1')">+</button>
+                            <button onclick="changeQuantity('${key}', -1)">-</button>
+                            <span id="quantity-${key}">${item.quantity}</span>
+                            <button onclick="changeQuantity('${key}', 1)">+</button>
                         </div>
                     </td>
+                    <td>${item.price.toFixed(2)}</td>
                 `;
                 cartElement.appendChild(row);
             });
             
             totalElement.innerText = totalPrice.toFixed(2);
+        }
+        
+        function changeQuantity(key, amount) {
+            if (cart[key]) {
+                cart[key].quantity += amount;
+                if (cart[key].quantity <= 0) {
+                    delete cart[key];
+                }
+                updateCartDisplay();
+            }
+        }
+        
+        function generateBarcodeFromButton() {
+            let totalPrice = parseFloat(totalElement.innerText) * 1000;
+            let barcodeValue = "2700000" + totalPrice.toString().padStart(6, '0');
+            
+            JsBarcode("#barcode", barcodeValue, {
+                format: "CODE128",
+                lineColor: "#000",
+                width: 2,
+                height: 50,
+                displayValue: true
+            });
         }
         
         function startQRScanner() {
